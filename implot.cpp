@@ -1473,7 +1473,7 @@ void ShowPlotContextMenu(ImPlotPlot& plot) {
             ImGui::EndMenu();
         }
     }
-    if ((ImGui::BeginMenu("Settings"))) {
+    if (plot.showSettingsOption && (ImGui::BeginMenu("Settings"))) {
         if (ImGui::MenuItem("Anti-Aliased Lines",NULL,ImHasFlag(plot.Flags, ImPlotFlags_AntiAliased)))
             ImFlipFlag(plot.Flags, ImPlotFlags_AntiAliased);
         if (ImGui::MenuItem("Equal", NULL, ImHasFlag(plot.Flags, ImPlotFlags_Equal)))

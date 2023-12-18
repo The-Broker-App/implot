@@ -946,6 +946,7 @@ struct ImPlotPlot
     bool                 Selecting;
     bool                 Selected;
     bool                 ContextLocked;
+    bool                 showSettingsOption;
     double               zoomOutMax;
 
     ImPlotPlot() {
@@ -963,6 +964,7 @@ struct ImPlotPlot
         JustCreated       = true;
         Initialized = SetupLocked = FitThisFrame = false;
         Hovered = Held = Selected = Selecting = ContextLocked = false;
+        showSettingsOption = true;
     }
 
     inline bool IsInputLocked() const {
