@@ -597,6 +597,7 @@ struct ImPlotTickCollection {
 struct ImPlotAxis
 {
     ImGuiID              ID;
+    ImPlotAxisMenuFlags  MenuFlags;
     ImPlotAxisFlags      Flags;
     ImPlotAxisFlags      PreviousFlags;
     ImPlotCond           RangeCond;
@@ -645,6 +646,7 @@ struct ImPlotAxis
         Enabled          = Hovered = Held = FitThisFrame = HasRange = HasFormatSpec = false;
         ShowDefaultTicks = true;
         zoomOutMax       = 100000000;
+        MenuFlags = ImPlotAxisMenuFlags_None;
     }
 
     inline void Reset() {

@@ -78,6 +78,7 @@ struct ImPlotContext;             // ImPlot context (opaque struct, see implot_i
 // Enums/Flags
 typedef int ImAxis;               // -> enum ImAxis_
 typedef int ImPlotFlags;          // -> enum ImPlotFlags_
+typedef int ImPlotAxisMenuFlags;
 typedef int ImPlotAxisFlags;      // -> enum ImPlotAxisFlags_
 typedef int ImPlotSubplotFlags;   // -> enum ImPlotSubplotFlags_
 typedef int ImPlotLegendFlags;    // -> enum ImPlotLegendFlags_
@@ -145,6 +146,21 @@ enum ImPlotAxisFlags_ {
     ImPlotAxisFlags_Lock          = ImPlotAxisFlags_LockMin | ImPlotAxisFlags_LockMax,
     ImPlotAxisFlags_NoDecorations = ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoGridLines | ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels,
     ImPlotAxisFlags_AuxDefault    = ImPlotAxisFlags_NoGridLines | ImPlotAxisFlags_Opposite
+};
+
+enum ImPlotAxisMenuFlags_ {
+    ImPlotAxisMenuFlags_None          = 0,
+    ImPlotAxisMenuFlags_NoLabel       = 1 << 0,
+    ImPlotAxisMenuFlags_NoGridLines   = 1 << 1,
+    ImPlotAxisMenuFlags_NoTickMarks   = 1 << 2,
+    ImPlotAxisMenuFlags_NoTickLabels  = 1 << 3,
+    ImPlotAxisMenuFlags_NoInitialFit  = 1 << 4,
+    ImPlotAxisMenuFlags_NoOpposite    = 1 << 5,
+    ImPlotAxisMenuFlags_NoInvert      = 1 << 6,
+    ImPlotAxisMenuFlags_NoLogScale    = 1 << 7,
+    ImPlotAxisMenuFlags_NoAutoFit     = 1 << 8,
+    ImPlotAxisMenuFlags_NoLockMin     = 1 << 9,
+    ImPlotAxisMenuFlags_NoLockMax     = 1 << 10
 };
 
 // Options for subplots (see BeginSubplot).

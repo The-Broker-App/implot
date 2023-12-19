@@ -1270,106 +1270,138 @@ void ShowAxisContextMenu(ImPlotAxis& axis, ImPlotAxis* equal_axis, bool time_all
     bool labels          = axis.HasTickLabels();
     double drag_speed    = (axis.Range.Size() <= DBL_EPSILON) ? DBL_EPSILON * 1.0e+13 : 0.01 * axis.Range.Size(); // recover from almost equal axis limits.
 
-    if (axis.IsTime()) {
-        ImPlotTime tmin = ImPlotTime::FromDouble(axis.Range.Min);
-        ImPlotTime tmax = ImPlotTime::FromDouble(axis.Range.Max);
+    auto menu_noLockMin = ImHasFlag(axis.MenuFlags, ImPlotAxisMenuFlags_NoLockMin);
+    auto menu_noLockMax = ImHasFlag(axis.MenuFlags, ImPlotAxisMenuFlags_NoLockMax);
 
-        BeginDisabledControls(always_locked);
-        ImGui::CheckboxFlags("##LockMin", (unsigned int*)&axis.Flags, ImPlotAxisFlags_LockMin);
-        EndDisabledControls(always_locked);
-        ImGui::SameLine();
-        BeginDisabledControls(axis.IsLockedMin() || always_locked);
-        if (ImGui::BeginMenu("Min Time")) {
-            if (ShowTimePicker("mintime", &tmin)) {
-                if (tmin >= tmax)
-                    tmax = AddTime(tmin, ImPlotTimeUnit_S, 1);
-                axis.SetRange(tmin.ToDouble(),tmax.ToDouble());
-            }
-            ImGui::Separator();
-            if (ShowDatePicker("mindate",&axis.PickerLevel,&axis.PickerTimeMin,&tmin,&tmax)) {
-                tmin = CombineDateTime(axis.PickerTimeMin, tmin);
-                if (tmin >= tmax)
-                    tmax = AddTime(tmin, ImPlotTimeUnit_S, 1);
-                axis.SetRange(tmin.ToDouble(), tmax.ToDouble());
-            }
-            ImGui::EndMenu();
-        }
-        EndDisabledControls(axis.IsLockedMin() || always_locked);
+    if (!menu_noLockMin && !menu_noLockMax) {
+        if (axis.IsTime()) {
+            ImPlotTime tmin = ImPlotTime::FromDouble(axis.Range.Min);
+            ImPlotTime tmax = ImPlotTime::FromDouble(axis.Range.Max);
 
-        BeginDisabledControls(always_locked);
-        ImGui::CheckboxFlags("##LockMax", (unsigned int*)&axis.Flags, ImPlotAxisFlags_LockMax);
-        EndDisabledControls(always_locked);
-        ImGui::SameLine();
-        BeginDisabledControls(axis.IsLockedMax() || always_locked);
-        if (ImGui::BeginMenu("Max Time")) {
-            if (ShowTimePicker("maxtime", &tmax)) {
-                if (tmax <= tmin)
-                    tmin = AddTime(tmax, ImPlotTimeUnit_S, -1);
-                axis.SetRange(tmin.ToDouble(),tmax.ToDouble());
+            BeginDisabledControls(always_locked);
+            ImGui::CheckboxFlags("##LockMin", (unsigned int *) &axis.Flags, ImPlotAxisFlags_LockMin);
+            EndDisabledControls(always_locked);
+            ImGui::SameLine();
+            BeginDisabledControls(axis.IsLockedMin() || always_locked);
+            if (ImGui::BeginMenu("Min Time")) {
+                if (ShowTimePicker("mintime", &tmin)) {
+                    if (tmin >= tmax)
+                        tmax = AddTime(tmin, ImPlotTimeUnit_S, 1);
+                    axis.SetRange(tmin.ToDouble(), tmax.ToDouble());
+                }
+                ImGui::Separator();
+                if (ShowDatePicker("mindate", &axis.PickerLevel, &axis.PickerTimeMin, &tmin, &tmax)) {
+                    tmin = CombineDateTime(axis.PickerTimeMin, tmin);
+                    if (tmin >= tmax)
+                        tmax = AddTime(tmin, ImPlotTimeUnit_S, 1);
+                    axis.SetRange(tmin.ToDouble(), tmax.ToDouble());
+                }
+                ImGui::EndMenu();
             }
-            ImGui::Separator();
-            if (ShowDatePicker("maxdate",&axis.PickerLevel,&axis.PickerTimeMax,&tmin,&tmax)) {
-                tmax = CombineDateTime(axis.PickerTimeMax, tmax);
-                if (tmax <= tmin)
-                    tmin = AddTime(tmax, ImPlotTimeUnit_S, -1);
-                axis.SetRange(tmin.ToDouble(), tmax.ToDouble());
+            EndDisabledControls(axis.IsLockedMin() || always_locked);
+
+            BeginDisabledControls(always_locked);
+            ImGui::CheckboxFlags("##LockMax", (unsigned int *) &axis.Flags, ImPlotAxisFlags_LockMax);
+            EndDisabledControls(always_locked);
+            ImGui::SameLine();
+            BeginDisabledControls(axis.IsLockedMax() || always_locked);
+            if (ImGui::BeginMenu("Max Time")) {
+                if (ShowTimePicker("maxtime", &tmax)) {
+                    if (tmax <= tmin)
+                        tmin = AddTime(tmax, ImPlotTimeUnit_S, -1);
+                    axis.SetRange(tmin.ToDouble(), tmax.ToDouble());
+                }
+                ImGui::Separator();
+                if (ShowDatePicker("maxdate", &axis.PickerLevel, &axis.PickerTimeMax, &tmin, &tmax)) {
+                    tmax = CombineDateTime(axis.PickerTimeMax, tmax);
+                    if (tmax <= tmin)
+                        tmin = AddTime(tmax, ImPlotTimeUnit_S, -1);
+                    axis.SetRange(tmin.ToDouble(), tmax.ToDouble());
+                }
+                ImGui::EndMenu();
             }
-            ImGui::EndMenu();
+            EndDisabledControls(axis.IsLockedMax() || always_locked);
+        } else {
+            BeginDisabledControls(always_locked);
+            ImGui::CheckboxFlags("##LockMin", (unsigned int *) &axis.Flags, ImPlotAxisFlags_LockMin);
+            EndDisabledControls(always_locked);
+            ImGui::SameLine();
+            BeginDisabledControls(axis.IsLockedMin() || always_locked);
+            double temp_min = axis.Range.Min;
+            if (DragFloat("Min", &temp_min, (float) drag_speed, -HUGE_VAL, axis.Range.Max - DBL_EPSILON)) {
+                axis.SetMin(temp_min, true);
+                if (equal_axis != NULL)
+                    equal_axis->SetAspect(axis.GetAspect());
+            }
+            EndDisabledControls(axis.IsLockedMin() || always_locked);
+
+            BeginDisabledControls(always_locked);
+            ImGui::CheckboxFlags("##LockMax", (unsigned int *) &axis.Flags, ImPlotAxisFlags_LockMax);
+            EndDisabledControls(always_locked);
+            ImGui::SameLine();
+            BeginDisabledControls(axis.IsLockedMax() || always_locked);
+            double temp_max = axis.Range.Max;
+            if (DragFloat("Max", &temp_max, (float) drag_speed, axis.Range.Min + DBL_EPSILON, HUGE_VAL)) {
+                axis.SetMax(temp_max, true);
+                if (equal_axis != NULL)
+                    equal_axis->SetAspect(axis.GetAspect());
+            }
+            EndDisabledControls(axis.IsLockedMax() || always_locked);
         }
-        EndDisabledControls(axis.IsLockedMax() || always_locked);
     }
-    else {
-        BeginDisabledControls(always_locked);
-        ImGui::CheckboxFlags("##LockMin", (unsigned int*)&axis.Flags, ImPlotAxisFlags_LockMin);
-        EndDisabledControls(always_locked);
-        ImGui::SameLine();
-        BeginDisabledControls(axis.IsLockedMin() || always_locked);
-        double temp_min = axis.Range.Min;
-        if (DragFloat("Min", &temp_min, (float)drag_speed, -HUGE_VAL, axis.Range.Max - DBL_EPSILON)) {
-            axis.SetMin(temp_min,true);
-            if (equal_axis != NULL)
-                equal_axis->SetAspect(axis.GetAspect());
-        }
-        EndDisabledControls(axis.IsLockedMin() || always_locked);
 
-        BeginDisabledControls(always_locked);
-        ImGui::CheckboxFlags("##LockMax", (unsigned int*)&axis.Flags, ImPlotAxisFlags_LockMax);
-        EndDisabledControls(always_locked);
-        ImGui::SameLine();
-        BeginDisabledControls(axis.IsLockedMax() || always_locked);
-        double temp_max = axis.Range.Max;
-        if (DragFloat("Max", &temp_max, (float)drag_speed, axis.Range.Min + DBL_EPSILON, HUGE_VAL)) {
-            axis.SetMax(temp_max,true);
-            if (equal_axis != NULL)
-                equal_axis->SetAspect(axis.GetAspect());
-        }
-        EndDisabledControls(axis.IsLockedMax() || always_locked);
+    auto menu_noAutoFit = ImHasFlag(axis.MenuFlags, ImPlotAxisMenuFlags_NoAutoFit);
+    auto menu_noLogScale = ImHasFlag(axis.MenuFlags, ImPlotAxisMenuFlags_NoLogScale);
+
+    if (!menu_noAutoFit || !menu_noLogScale)
+        ImGui::Separator();
+
+    if (!menu_noAutoFit)
+        ImGui::CheckboxFlags("Auto-Fit",(unsigned int*)&axis.Flags, ImPlotAxisFlags_AutoFit);
+
+    if (!menu_noLogScale) {
+        BeginDisabledControls(axis.IsTime() && time_allowed);
+        ImGui::CheckboxFlags("Log Scale", (unsigned int *) &axis.Flags, ImPlotAxisFlags_LogScale);
+        EndDisabledControls(axis.IsTime() && time_allowed);
     }
 
-    ImGui::Separator();
-
-    ImGui::CheckboxFlags("Auto-Fit",(unsigned int*)&axis.Flags, ImPlotAxisFlags_AutoFit);
-    BeginDisabledControls(axis.IsTime() && time_allowed);
-    ImGui::CheckboxFlags("Log Scale",(unsigned int*)&axis.Flags, ImPlotAxisFlags_LogScale);
-    EndDisabledControls(axis.IsTime() && time_allowed);
     if (time_allowed) {
         BeginDisabledControls(axis.IsLog());
         ImGui::CheckboxFlags("Time",(unsigned int*)&axis.Flags, ImPlotAxisFlags_Time);
         EndDisabledControls(axis.IsLog());
     }
-    ImGui::Separator();
-    ImGui::CheckboxFlags("Invert",(unsigned int*)&axis.Flags, ImPlotAxisFlags_Invert);
-    ImGui::CheckboxFlags("Opposite",(unsigned int*)&axis.Flags, ImPlotAxisFlags_Opposite);
-    ImGui::Separator();
-    BeginDisabledControls(axis.LabelOffset == -1);
-    if (ImGui::Checkbox("Label", &label))
+
+    auto menu_noInvert = ImHasFlag(axis.MenuFlags, ImPlotAxisMenuFlags_NoInvert);
+    auto menu_noOpposite = ImHasFlag(axis.MenuFlags, ImPlotAxisMenuFlags_NoOpposite);
+
+    if (!menu_noInvert || !menu_noOpposite)
+        ImGui::Separator();
+
+    if (!menu_noInvert)
+        ImGui::CheckboxFlags("Invert",(unsigned int*)&axis.Flags, ImPlotAxisFlags_Invert);
+
+    if (!menu_noOpposite)
+        ImGui::CheckboxFlags("Opposite",(unsigned int*)&axis.Flags, ImPlotAxisFlags_Opposite);
+
+    auto menu_noLabel = ImHasFlag(axis.MenuFlags, ImPlotAxisMenuFlags_NoLabel);
+    auto menu_noGridLines = ImHasFlag(axis.MenuFlags, ImPlotAxisMenuFlags_NoGridLines);
+    auto menu_noTickMarks = ImHasFlag(axis.MenuFlags, ImPlotAxisMenuFlags_NoTickMarks);
+    auto menu_noTickLabels = ImHasFlag(axis.MenuFlags, ImPlotAxisMenuFlags_NoTickLabels);
+
+    if (!menu_noLabel || !menu_noGridLines || !menu_noTickMarks || !menu_noTickLabels)
+        ImGui::Separator();
+
+    if (ImGui::Checkbox("Label", &label) && !menu_noLabel) {
+        BeginDisabledControls(axis.LabelOffset == -1);
         ImFlipFlag(axis.Flags, ImPlotAxisFlags_NoLabel);
-    EndDisabledControls(axis.LabelOffset == -1);
-    if (ImGui::Checkbox("Grid Lines", &grid))
+        EndDisabledControls(axis.LabelOffset == -1);
+    }
+
+    if (ImGui::Checkbox("Grid Lines", &grid) && !menu_noGridLines)
         ImFlipFlag(axis.Flags, ImPlotAxisFlags_NoGridLines);
-    if (ImGui::Checkbox("Tick Marks", &ticks))
+    if (ImGui::Checkbox("Tick Marks", &ticks) && !menu_noTickMarks)
         ImFlipFlag(axis.Flags, ImPlotAxisFlags_NoTickMarks);
-    if (ImGui::Checkbox("Tick Labels", &labels))
+    if (ImGui::Checkbox("Tick Labels", &labels) && !menu_noTickLabels)
         ImFlipFlag(axis.Flags, ImPlotAxisFlags_NoTickLabels);
 
 }
